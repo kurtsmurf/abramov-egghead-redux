@@ -1,4 +1,5 @@
 import * as Store from './store.js'
+import * as Preact from 'https://cdn.jsdelivr.net/npm/preact/dist/preact.mjs'
 
 const counter = (state = 0, action) => {
   switch (action.type) {
@@ -12,8 +13,7 @@ const counter = (state = 0, action) => {
 }
 
 const store = Store.createStore(counter)
-
-const e = preact.createElement
+const e = Preact.createElement
 
 const Counter = ({ value, increment, decrement }) => (
   e('div', null,
@@ -23,7 +23,7 @@ const Counter = ({ value, increment, decrement }) => (
 )
 
 const render = () => {
-  preact.render(
+  Preact.render(
     e(
       Counter,
       {
