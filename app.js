@@ -5,7 +5,7 @@ const counter = (state = 0, action) => {
         case 'INCREMENT':
             return state + 1
         case 'DECREMENT':
-            return state -1
+            return state - 1
         default:
             return state
     }
@@ -13,18 +13,29 @@ const counter = (state = 0, action) => {
 
 const store = Store.createStore(counter)
 
-document.addEventListener('click', () => {
-    store.dispatch({ type: 'INCREMENT' })
-})
+const e = React.createElement
 
-const Counter = ({ value }) => React.createElement('h1', null, value)
+const Counter = ({ value, increment, decrement }) => (
+    e('div', null,
+        e('h1', null, value),
+        e('button', { onClick: increment }, '+'),
+        e('button', { onClick: decrement }, '-'))
+)
 
 const render = () => {
     ReactDOM.render(
-        React.createElement(Counter, {value: store.getState()}, null),
+        e(
+            Counter,
+            {
+                value: store.getState(),
+                increment: () => store.dispatch({ type: 'INCREMENT' }),
+                decrement: () => store.dispatch({ type: 'DECREMENT' })
+            },
+            null),
         document.getElementById('root')
     )
 }
+
 render();
 
 store.subscribe(render)
