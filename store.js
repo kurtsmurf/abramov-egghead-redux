@@ -1,23 +1,23 @@
 export const createStore = reducer => {
-    let state
-    let listeners = []
+  let state
+  let listeners = []
 
-    const getState = () => state
+  const getState = () => state
 
-    const dispatch = action => {
-        state = reducer(state, action)
-        listeners.forEach(listener => listener())
+  const dispatch = action => {
+    state = reducer(state, action)
+    listeners.forEach(listener => listener())
+  }
+
+  const subscribe = listener => {
+    listeners.push(listener)
+    // return an unsubscribe method
+    return () => {
+      listeners = listeners.filter(l => l !== listener)
     }
+  }
 
-    const subscribe = listener => {
-        listeners.push(listener)
-        // return an unsubscribe method
-        return () => {
-            listeners = listeners.filter(l => l !== listener)
-        }
-    }
+  dispatch({})
 
-    dispatch({})
-
-    return { getState, dispatch, subscribe }
+  return { getState, dispatch, subscribe }
 }
