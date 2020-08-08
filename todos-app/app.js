@@ -1,4 +1,5 @@
 // Redux substitute
+
 const createStore = reducer => {
   let state
   let listeners = []
@@ -25,61 +26,63 @@ const createStore = reducer => {
 
 // Reducers
 
-const todo = (state, action) => {
-  switch (action.type) {
-    case ('ADD_TODO'):
-      return {
-        id: action.id,
-        text: action.text,
-        completed: false
-      }
-    case ('TOGGLE_TODO'):
-      return {
-        ...state,
-        completed: !state.completed
-      }
-    default:
-      return state
+const reducer = (() => {
+  const todo = (state, action) => {
+    switch (action.type) {
+      case ('ADD_TODO'):
+        return {
+          id: action.id,
+          text: action.text,
+          completed: false
+        }
+      case ('TOGGLE_TODO'):
+        return {
+          ...state,
+          completed: !state.completed
+        }
+      default:
+        return state
+    }
   }
-}
-
-const todos = (state = [], action) => {
-  switch (action.type) {
-    case ('ADD_TODO'):
-      return [...state, todo(undefined, action)]
-    case ('REMOVE_TODO'):
-      return state.filter(t => {
-        return t.id !== action.id
-      })
-    case ('TOGGLE_TODO'):
-      return state.map(t => {
-        return t.id !== action.id ? t : todo(t, action)
-      })
-    default:
-      return state
+  
+  const todos = (state = [], action) => {
+    switch (action.type) {
+      case ('ADD_TODO'):
+        return [...state, todo(undefined, action)]
+      case ('REMOVE_TODO'):
+        return state.filter(t => {
+          return t.id !== action.id
+        })
+      case ('TOGGLE_TODO'):
+        return state.map(t => {
+          return t.id !== action.id ? t : todo(t, action)
+        })
+      default:
+        return state
+    }
   }
-}
-
-const viewFilter = (state = 'VIEW_ALL', action) => {
-  switch (action.type) {
-    case ('VIEW_ALL'):
-    case ('VIEW_COMPLETED'):
-    case ('VIEW_NOT_COMPLETED'):
-      return action.type
-    default: return state
+  
+  const viewFilter = (state = 'VIEW_ALL', action) => {
+    switch (action.type) {
+      case ('VIEW_ALL'):
+      case ('VIEW_COMPLETED'):
+      case ('VIEW_NOT_COMPLETED'):
+        return action.type
+      default: return state
+    }
   }
-}
-
-const todosApp = (state = {}, action) => {
-  return {
-    todos: todos(state.todos, action),
-    viewFilter: viewFilter(state.viewFilter, action)
+  
+  return (state = {}, action) => {
+    return {
+      todos: todos(state.todos, action),
+      viewFilter: viewFilter(state.viewFilter, action)
+    }
   }
-}
+})()
 
 // The store
 
-const store = createStore(todosApp)
+const store = createStore(reducer)
 
 store.subscribe(() => {
   console.log(JSON.stringify(store.getState(), null, 2))
@@ -231,7 +234,6 @@ const App = () => (
     'div',
     null,
     el(Todos, {}, null),
-    el('br', {}, null),
     el(Controls, {}, null)
   )
 )
