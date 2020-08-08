@@ -1,3 +1,4 @@
+// Redux substitute
 const createStore = reducer => {
   let state
   let listeners = []
@@ -5,6 +6,7 @@ const createStore = reducer => {
   const getState = () => state
 
   const dispatch = action => {
+    console.log(action)
     state = reducer(state, action)
     listeners.forEach(listener => listener())
   }
@@ -20,6 +22,8 @@ const createStore = reducer => {
 
   return { getState, dispatch, subscribe }
 }
+
+// Reducers
 
 const todo = (state, action) => {
   switch (action.type) {
@@ -58,9 +62,10 @@ const todos = (state = [], action) => {
 
 const viewFilter = (state = 'VIEW_ALL', action) => {
   switch (action.type) {
-    case ('VIEW_ALL'): return action.type
-    case ('VIEW_COMPLETED'): return action.type
-    case ('VIEW_NOT_COMPLETED'): return action.type
+    case ('VIEW_ALL'):
+    case ('VIEW_COMPLETED'):
+    case ('VIEW_NOT_COMPLETED'):
+      return action.type
     default: return state
   }
 }
@@ -72,12 +77,20 @@ const todosApp = (state = {}, action) => {
   }
 }
 
+// The store
+
 const store = createStore(todosApp)
+
+store.subscribe(() => {
+  console.log(JSON.stringify(store.getState(), null, 2))
+})
+
+// Helper functions
 
 const addTodo = (
   () => {
     let id = 0
-    return (text) => {
+    return text => {
       store.dispatch({
         type: 'ADD_TODO',
         id: id++,
@@ -87,12 +100,8 @@ const addTodo = (
   }
 )()
 
-const removeTodo = (id) => {
+const removeTodo = id => {
   store.dispatch({ type: 'REMOVE_TODO', id })
-}
-
-const log = () => {
-  console.log(JSON.stringify(store.getState(), null, 2))
 }
 
 const getTodos = () => {
@@ -112,4 +121,129 @@ const getTodos = () => {
   return store.getState().todos.filter(filter)
 }
 
-store.subscribe(log)
+// View components
+
+const el = preact.createElement
+
+const TodoText = todo => (
+  el(
+    'pre',
+    null,
+    JSON.stringify(todo, null, 2)
+  )
+)
+
+const RemoveTodo = ({ id }) => (
+  el(
+    'button',
+    { onClick: () => removeTodo(id) },
+    'Remove'
+  )
+)
+
+const ToggleTodo = ({ id }) => (
+  el(
+    'button',
+    {
+      onClick: () => store.dispatch({
+        type: 'TOGGLE_TODO', id
+      })
+    },
+    'Toggle'
+  )
+)
+
+const Todo = todo => (
+  el(
+    'div',
+    null,
+    el(TodoText, todo, null),
+    el(RemoveTodo, { id: todo.id }, null),
+    el(ToggleTodo, { id: todo.id }, null)
+  )
+)
+
+const Todos = () => (
+  el(
+    'div',
+    { class: 'todos'},
+    ...getTodos().map(Todo)
+  )
+)
+
+let textInput = preact.createRef()
+
+const Input = () => (
+  el(
+    'input',
+    {
+      type: 'text',
+      ref: textInput
+    },
+    null
+  )
+)
+
+const Add = () => (
+  el(
+    'button',
+    { onClick: () => addTodo(textInput.current.value) },
+    'Add Todo'
+  )
+)
+
+const Filter = () => (
+  el(
+    'select',
+    {
+      onChange: e => store.dispatch({ type: e.target.value })
+    },
+    el(
+      'option',
+      { value: 'VIEW_ALL' },
+      'View all'
+    ),
+    el(
+      'option',
+      { value: 'VIEW_COMPLETED' },
+      'View completed'
+    ),
+    el(
+      'option',
+      { value: 'VIEW_NOT_COMPLETED' },
+      'View not completed'
+    )
+  )
+)
+
+const Controls = () => (
+  el(
+    'div',
+    {  },
+    el(Input, {}, null),
+    el(Add, {}, null),
+    el(Filter, {}, null)
+  )
+)
+
+const App = () => (
+  el(
+    'div',
+    null,
+    el(Todos, {}, null),
+    el('br', {}, null),
+    el(Controls, {}, null)
+  )
+)
+
+// Rendering
+const render = () => {
+  preact.render(
+    el(App, {}, null),
+    document.getElementById('root')
+  )
+}
+
+render()
+
+store.subscribe(render)
