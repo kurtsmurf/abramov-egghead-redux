@@ -44,24 +44,20 @@ const reducer = (() => {
         return state
     }
   }
-  
+
   const todos = (state = [], action) => {
     switch (action.type) {
       case ('ADD_TODO'):
         return [...state, todo(undefined, action)]
       case ('REMOVE_TODO'):
-        return state.filter(t => {
-          return t.id !== action.id
-        })
+        return state.filter(t => t.id !== action.id)
       case ('TOGGLE_TODO'):
-        return state.map(t => {
-          return t.id !== action.id ? t : todo(t, action)
-        })
+        return state.map(t => t.id !== action.id ? t : todo(t, action))
       default:
         return state
     }
   }
-  
+
   const viewFilter = (state = 'VIEW_ALL', action) => {
     switch (action.type) {
       case ('VIEW_ALL'):
@@ -71,7 +67,7 @@ const reducer = (() => {
       default: return state
     }
   }
-  
+
   return (state = {}, action) => {
     return {
       todos: todos(state.todos, action),
@@ -93,32 +89,25 @@ store.subscribe(() => {
 const addTodo = (
   () => {
     let id = 0
+
     return text => {
-      store.dispatch({
-        type: 'ADD_TODO',
-        id: id++,
-        text: text
-      })
+      store.dispatch({ type: 'ADD_TODO', id: id++, text: text })
     }
   }
 )()
 
-const removeTodo = id => {
-  store.dispatch({ type: 'REMOVE_TODO', id })
-}
+const removeTodo = id => store.dispatch({ type: 'REMOVE_TODO', id })
 
-const getTodos = () => {
-  let filter
-
-  switch (store.getState().viewFilter) {
-    case ('VIEW_COMPLETED'):
-      filter = todo => todo.completed
-      break
-    case ('VIEW_NOT_COMPLETED'):
-      filter = todo => !todo.completed
-      break
-    default:
-      filter = _ => true
+const visibleTodos = () => {
+  const filter = todo => {
+    switch (store.getState().viewFilter) {
+      case ('VIEW_COMPLETED'):
+        return todo => todo.completed
+      case ('VIEW_NOT_COMPLETED'):
+        return filter = todo => !todo.completed
+      default:
+        return _ => true
+    }
   }
 
   return store.getState().todos.filter(filter)
@@ -126,69 +115,46 @@ const getTodos = () => {
 
 // View components
 
-const el = preact.createElement
-
 const TodoText = todo => (
-  el(
-    'pre',
-    null,
-    JSON.stringify(todo, null, 2)
-  )
+  preact.h('pre', {}, JSON.stringify(todo, null, 2))
 )
 
 const RemoveTodo = ({ id }) => (
-  el(
-    'button',
-    { onClick: () => removeTodo(id) },
-    'Remove'
-  )
+  preact.h('button', { onClick: () => removeTodo(id) }, 'Remove')
 )
 
 const ToggleTodo = ({ id }) => (
-  el(
+  preact.h(
     'button',
-    {
-      onClick: () => store.dispatch({
-        type: 'TOGGLE_TODO', id
-      })
-    },
+    { onClick: () => store.dispatch({ type: 'TOGGLE_TODO', id }) },
     'Toggle'
   )
 )
 
 const Todo = todo => (
-  el(
+  preact.h(
     'div',
-    null,
-    el(TodoText, todo, null),
-    el(RemoveTodo, { id: todo.id }, null),
-    el(ToggleTodo, { id: todo.id }, null)
+    {},
+    preact.h(TodoText, todo),
+    preact.h(RemoveTodo, { id: todo.id }),
+    preact.h(ToggleTodo, { id: todo.id })
   )
 )
 
 const Todos = () => (
-  el(
+  preact.h(
     'div',
-    { class: 'todos'},
-    ...getTodos().map(Todo)
+    { class: 'todos' },
+    ...visibleTodos().map(Todo)
   )
 )
 
 let textInput = preact.createRef()
 
-const Input = () => (
-  el(
-    'input',
-    {
-      type: 'text',
-      ref: textInput
-    },
-    null
-  )
-)
+const Input = () => preact.h('input',{ type: 'text', ref: textInput })
 
 const Add = () => (
-  el(
+  preact.h(
     'button',
     { onClick: () => addTodo(textInput.current.value) },
     'Add Todo'
@@ -196,52 +162,39 @@ const Add = () => (
 )
 
 const Filter = () => (
-  el(
+  preact.h(
     'select',
-    {
-      onChange: e => store.dispatch({ type: e.target.value })
-    },
-    el(
-      'option',
-      { value: 'VIEW_ALL' },
-      'View all'
-    ),
-    el(
-      'option',
-      { value: 'VIEW_COMPLETED' },
-      'View completed'
-    ),
-    el(
-      'option',
-      { value: 'VIEW_NOT_COMPLETED' },
-      'View not completed'
-    )
+    { onChange: e => store.dispatch({ type: e.target.value }) },
+    preact.h('option', { value: 'VIEW_ALL' }, 'View all'),
+    preact.h('option', { value: 'VIEW_COMPLETED' }, 'View completed'),
+    preact.h('option', { value: 'VIEW_NOT_COMPLETED' }, 'View not completed')
   )
 )
 
 const Controls = () => (
-  el(
+  preact.h(
     'div',
-    {  },
-    el(Input, {}, null),
-    el(Add, {}, null),
-    el(Filter, {}, null)
+    {},
+    preact.h(Input),
+    preact.h(Add),
+    preact.h(Filter)
   )
 )
 
 const App = () => (
-  el(
+  preact.h(
     'div',
-    null,
-    el(Todos, {}, null),
-    el(Controls, {}, null)
+    {},
+    preact.h(Todos),
+    preact.h(Controls)
   )
 )
 
 // Rendering
+
 const render = () => {
   preact.render(
-    el(App, {}, null),
+    preact.h(App),
     document.getElementById('root')
   )
 }
@@ -249,3 +202,16 @@ const render = () => {
 render()
 
 store.subscribe(render)
+
+
+// all siblings of one type have the same formatting (either every sibling is unpacked vertically, or none of them are)
+// ^ not sure about this one
+
+// at every level of indentation, either all siblings are arranged vertically or all horizontally, never a mixture.
+
+// everything wants to be on one line - gravity goes that way
+
+// when to add a blank line is pretty much just stylistic
+// try getting rid of all blank lines with this regex ^\s*$\n
+// get rid of all line-ending whitespace \s+$
+
