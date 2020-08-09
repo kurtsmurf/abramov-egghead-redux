@@ -14,9 +14,7 @@ const createStore = reducer => {
 
   const subscribe = listener => {
     listeners.push(listener)
-    return () => {
-      listeners = listeners.filter(l => l !== listener)
-    }
+    return () => { listeners = listeners.filter(l => l !== listener) }
   }
 
   dispatch({})
@@ -80,9 +78,7 @@ const reducer = (() => {
 
 const store = createStore(reducer)
 
-store.subscribe(() => {
-  console.log(JSON.stringify(store.getState(), null, 2))
-})
+store.subscribe(() => console.log(JSON.stringify(store.getState(), null, 2)))
 
 // Helper functions
 
@@ -98,20 +94,20 @@ const addTodo = (
 
 const removeTodo = id => store.dispatch({ type: 'REMOVE_TODO', id })
 
-const visibleTodos = () => {
-  const filter = todo => {
-    switch (store.getState().viewFilter) {
-      case ('VIEW_COMPLETED'):
-        return todo => todo.completed
-      case ('VIEW_NOT_COMPLETED'):
-        return filter = todo => !todo.completed
-      default:
-        return _ => true
+const visibleTodos = () => (
+  store.getState().todos.filter(
+    ({ completed }) => {
+      switch (store.getState().viewFilter) {
+        case ('VIEW_COMPLETED'):
+          return completed
+        case ('VIEW_NOT_COMPLETED'):
+          return !completed
+        default:
+          return _ => true
+      }
     }
-  }
-
-  return store.getState().todos.filter(filter)
-}
+  )
+)
 
 // View components
 
@@ -145,7 +141,7 @@ const Todos = () => (
   preact.h(
     'div',
     { class: 'todos' },
-    ...visibleTodos().map(Todo)
+    visibleTodos().map(Todo)
   )
 )
 
